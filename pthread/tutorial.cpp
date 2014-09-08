@@ -55,6 +55,23 @@ const int NUMBER_OF_THREADS = 5;
 
 int some_value = 10;
 
+
+pthread_mutex_t mutex_for_some_value = PTHREAD_MUTEX_INITIALIZER;
+void *thread_talk_with_mutex(void * thread_nr)
+{
+    for(int i=0;i<500;i++)
+    {
+        pthread_mutex_lock( &mutex_for_some_value) ;
+        some_value=some_value * 10;
+        some_value ++ ;
+        some_value --;
+        some_value = some_value/10;
+        pthread_mutex_unlock( &mutex_for_some_value);
+    }
+    pthread_exit(NULL);
+}
+
+
 void *thread_talk_without_mutex(void * thread_nr)
 {
     for(int i=0;i<500;i++)
@@ -86,7 +103,7 @@ void pthread_join_example_2()
     {
         temp_arg[current_t]   = current_t;
         int result = pthread_create(&thread[current_t], NULL,
-                                    thread_talk_without_mutex,
+                                    thread_talk_with_mutex,
                                     static_cast<void*>(&temp_arg[current_t]))  ;
         if (result !=0)
             cout << "Error creating thread " << current_t << ". Return code:" << result <<  endl;
