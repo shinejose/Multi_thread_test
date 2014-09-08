@@ -53,6 +53,8 @@ void pthread_join_example_1()
 }
 const int NUMBER_OF_THREADS = 5;
 
+
+
 void * thread_talk(void * thread_nr)
 {
     int a = *(static_cast<int*>(thread_nr));
@@ -82,11 +84,29 @@ void pthread_join_example_2()
 
     cout << "All threads completed." ;
 }
+void pthread_join_example_2_wrong()
+{
+    pthread_t thread[NUMBER_OF_THREADS];
+    cout << "Starting all threads..." << endl;
+    int temp_arg[NUMBER_OF_THREADS] ;
+    for(int current_t = 0; current_t < NUMBER_OF_THREADS; current_t++)
+    {
+        int result = pthread_create(&thread[current_t], NULL,
+                                    thread_talk, static_cast<void*>(&current_t))  ;
+        if (result !=0)
+            cout << "Error creating thread " << current_t << ". Return code:" << result <<  endl;
+    }
+
+    for(int current_t = 0; current_t < NUMBER_OF_THREADS; current_t++)
+        pthread_join(thread[current_t], NULL);
+
+    cout << "All threads completed." ;
+}
 
 
 int main( void )
 {
-    pthread_join_example_2(); 
+    pthread_join_example_2_wrong(); 
     return 0;
 }
 
