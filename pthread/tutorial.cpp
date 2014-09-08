@@ -23,43 +23,81 @@
 #include <thread>
 #include <chrono>
 #include <atomic>
-
+using namespace std ;
 extern "C"
 {
-    #include <pthread.h>
-    #include <unistd.h>
+#include <unistd.h>
+#include <pthread.h> 
 }
-using namespace std;
 
-typedef long long  ll;
-typedef unsigned long long ull;
-
-    void * function1(void *argument )
+void* function1(void* arg)
 {
-
-    cout << "hello..." << endl ;
-    sleep(2); // fall asLeep here for 2 seconds...
-
-}
-
-    void * function2(void *argument)
-{
-    cout << " ....world" << endl ;
-}
-
-int main(){
-    // ios::sync_with_stdio(false);
-    pthread_t t1, t2 ; // declare 2 threads.
-    pthread_create( &t1, NULL, function1,NULL); // create a thread running function1
-    pthread_create( &t2, NULL, function2,NULL); // create a thread running function2
-
-    // Because all created threads are terminated when main() finishes, we have
-    // to give the threads some time to finish. Unfortunately for function1, main()
-    // will give only 1 second, but function1 needs at least 2 seconds. So function1 will
-    // probably be terminated before it can finish. This is a BAD way to manage threads.
-    sleep(1);    
+    cout << *(reinterpret_cast<string*>(arg)) << endl ;
     return 0;
 }
+
+void pthread_join_example_1()
+{
+    pthread_t  t1,t2 ;
+
+    string msg1 ("hello")  ;
+    string msg2 ("world")  ;
+
+    int create1 = pthread_create( &t1, NULL, function1,reinterpret_cast<void*>(&msg1));
+    if (create1 != 0) cout << "error" ;
+    int create2 = pthread_create( &t2, NULL, function1,reinterpret_cast<void*>(&msg2));
+    if (create2 != 0) cout << "error" ;
+    pthread_join(t1,NULL) ;
+    pthread_join(t2,NULL) ;
+    
+}
+const int NUMBER_OF_THREADS = 5;
+
+void * thread_talk(void * thread_nr)
+{
+    int a = *(static_cast<int*>(thread_nr));
+    sleep(a+1);
+    cout << "Thread " <<  a <<" has finished"  << endl;
+
+    pthread_exit(NULL);
+    return 0;
+}
+
+void pthread_join_example_2()
+{
+    pthread_t thread[NUMBER_OF_THREADS];
+    cout << "Starting all threads..." << endl;
+    int temp_arg[NUMBER_OF_THREADS] ;
+    for(int current_t = 0; current_t < NUMBER_OF_THREADS; current_t++)
+    {
+        temp_arg[current_t]   = current_t;
+        int result = pthread_create(&thread[current_t], NULL,
+                                    thread_talk, static_cast<void*>(&temp_arg[current_t]))  ;
+        if (result !=0)
+            cout << "Error creating thread " << current_t << ". Return code:" << result <<  endl;
+    }
+
+    for(int current_t = 0; current_t < NUMBER_OF_THREADS; current_t++)
+        pthread_join(thread[current_t], NULL);
+
+    cout << "All threads completed." ;
+}
+
+
+int main( void )
+{
+    pthread_join_example_2(); 
+    return 0;
+}
+
+
+
+
+
+
+
+
+
 
 
 
