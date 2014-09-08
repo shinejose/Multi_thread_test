@@ -53,7 +53,19 @@ void pthread_join_example_1()
 }
 const int NUMBER_OF_THREADS = 5;
 
+int some_value = 10;
 
+void *thread_talk_without_mutex(void * thread_nr)
+{
+    for(int i=0;i<500;i++)
+    {
+        some_value=some_value * 10;
+        some_value ++ ;
+        some_value --;
+        some_value = some_value/10;
+    }
+    pthread_exit(NULL);
+}
 
 void * thread_talk(void * thread_nr)
 {
@@ -74,7 +86,8 @@ void pthread_join_example_2()
     {
         temp_arg[current_t]   = current_t;
         int result = pthread_create(&thread[current_t], NULL,
-                                    thread_talk, static_cast<void*>(&temp_arg[current_t]))  ;
+                                    thread_talk_without_mutex,
+                                    static_cast<void*>(&temp_arg[current_t]))  ;
         if (result !=0)
             cout << "Error creating thread " << current_t << ". Return code:" << result <<  endl;
     }
@@ -82,7 +95,8 @@ void pthread_join_example_2()
     for(int current_t = 0; current_t < NUMBER_OF_THREADS; current_t++)
         pthread_join(thread[current_t], NULL);
 
-    cout << "All threads completed." ;
+    cout << "All threads completed."<<endl ;
+    cout << "some_value = " << some_value<< endl;
 }
 void pthread_join_example_2_wrong()
 {
@@ -106,7 +120,7 @@ void pthread_join_example_2_wrong()
 
 int main( void )
 {
-    pthread_join_example_2_wrong(); 
+    pthread_join_example_2(); 
     return 0;
 }
 
